@@ -1,11 +1,9 @@
-import os
 from csv import DictReader
+from exceptions import InstantiateCSVError, TooLongNameError
 
 
 class Item:
-    """
-    A class to represent a product in a store.
-    """
+    """A class to represent a product in a store."""
     pay_rate = 1.0
     all = []
 
@@ -37,9 +35,7 @@ class Item:
         return self.price * self.quantity
 
     def apply_discount(self) -> None:
-        """
-        Applies the set discount for a specific product.
-        """
+        """Applies the set discount for a specific product."""
         self.price *= self.pay_rate
 
     def __add__(self, other):
@@ -54,48 +50,43 @@ class Item:
     @name.setter
     def name(self, name):
         if len(name) > 10:
-            raise Exception('TooLongNameError')
+            raise TooLongNameError('TooLongNameError')
         else:
             self.__name = name
 
     @staticmethod
-    def load_csv(filename) -> list:
-        """
-        Reading a csv-file and storing the data in list.
-        """
+    def read_csv_file(path: str) -> list:
+        """Reading a csv-file and storing the data in list."""
+
         items = []
-        try:
-            filedir = os.path.dirname(os.path.abspath(__file__))
-            with open(os.path.join(f'{filedir}', filename), 'r', encoding='utf-8') as csv_file:
-                csv_reader = DictReader(csv_file)
-
-                for item in csv_reader:
-                    items.append(item)
-                return items
-
-        except FileNotFoundError:
-            print(f"File {filename} was not found")
+        with open(path, encoding='utf-8') as f:
+            files = DictReader(f)
+            for file in files:
+                if len(file) < 3:
+                    raise InstantiateCSVError
+                items.append(file)
+        return items
 
     @classmethod
-    def instantiate_from_csv(cls) -> None:
-        """
-        Making OOP-objects from specific data file.
-        """
+    def instantiate_from_csv(cls, path):
+        """Making OOP-objects from specific data file."""
         try:
             cls.all = []
-            data = cls.load_csv('items.csv')
+            data = cls.read_csv_file(path)
             for line in data:
                 cls(line['name'],
                     cls.string_to_number(line['price']),
                     cls.string_to_number(line['quantity']))
-        except TypeError:
-            print("There is no data for making object")
+        except FileNotFoundError:
+            print('Отсутствует файл')
+            return 'Отсутствует файл'
+        except InstantiateCSVError:
+            print('Файл поврежден')
+            return 'Файл поврежден'
 
     @staticmethod
     def string_to_number(string: int or float) -> int or float:
-        """
-        Making string to int or float number and returning it.
-        """
+        """Making string to int or float number and returning it."""
         if '.' in string:
             return float(string) // 1
         else:
