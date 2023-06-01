@@ -1,5 +1,6 @@
 import pytest
 
+from exceptions import TooLongNameError
 from src.item import Item
 
 
@@ -21,7 +22,7 @@ class TestItem:
             self.item.name = 'Iphone 13 Pro Max'
 
     def test_instantiate_from_csv(self):
-        self.item.instantiate_from_csv()
+        self.item.instantiate_from_csv('../items.csv')
         assert len(Item.all) == 5
         item1 = Item.all[0]
         assert item1.name == 'Смартфон'
@@ -39,3 +40,9 @@ class TestItem:
         item1 = Item("Смартфон", 10000, 20)
         assert str(item1) == 'Смартфон'
 
+    def test_instantiate_from_csv_exceptions(self):
+        assert self.item.instantiate_from_csv('asd.txt') == 'Отсутствует файл'
+
+    def test_name_exception(self):
+        with pytest.raises(TooLongNameError):
+            self.item.name = 'СуперАппарат'
